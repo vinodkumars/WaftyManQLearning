@@ -38,6 +38,8 @@
 		
 		QString: null,
 		rebirthCount: 0,
+		bestScore: 0,
+		sumScore: 0,
 		
         pipeDist: 174,
         pipeGap: 114 / 2,
@@ -55,7 +57,7 @@
         init: function () {
 			console.log("Initializing");
             this.reset();
-			
+						
 			// Vertical Distance
 			this.Q = new Array();
 			for (var v = 0; v < (this.verticalRange[1] - this.verticalRange[0])/this.resolution; v++) {
@@ -180,12 +182,19 @@
                         this.newBest = window.game.gotScore(this.score);
                     }
 					
+					this.sumScore = this.sumScore + this.score;
+					if (this.score > this.bestScore) {
+						// console.log("Best Score: "+this.score);
+						this.bestScore = this.score;
+					}
+					
 					this.QString=JSON.stringify(this.Q);
 					this.rebirthCount++;
-					if(this.rebirthCount % 100===0)
-					{
+					if(this.rebirthCount % 100===0) {
 						console.log("Rebirth count:"+this.rebirthCount);
-						console.log(this.QString);
+						// console.log(this.QString);
+						console.log("\tBest score:"+this.bestScore);
+						console.log("\tAverage:"+(this.sumScore / this.rebirthCount));
 					}
 					
 					this.reset();
@@ -241,14 +250,14 @@
 				/* console.log("s: Vertical: " + qStateVerticalBlockIndex + ", Horizontal: " + qStateHorizontalBlockIndex);
 				console.log("s' Vertical: " + qStateDashVerticalBlockIndex + ", Horizontal: " + qStateDashHorizontalBlockIndex); */
 				
-				// update QValue(s,a)
-				var jump_v = this.Q[qStateDashVerticalBlockIndex][qStateDashHorizontalBlockIndex]["jump"];
-				var none_v = this.Q[qStateDashVerticalBlockIndex][qStateDashHorizontalBlockIndex]["none"]
-				var V_s_dash_a_dash = Math.max(jump_v, none_v);
+				// update Q(s,a)
+				var jumpVal = this.Q[qStateDashVerticalBlockIndex][qStateDashHorizontalBlockIndex]["jump"];
+				var noneVal = this.Q[qStateDashVerticalBlockIndex][qStateDashHorizontalBlockIndex]["none"]
+				var VSDashADash = Math.max(jumpVal, noneVal);
 
-				var Q_s_a = this.Q[qStateVerticalBlockIndex][qStateHorizontalBlockIndex][this.actionSelected];
+				var Qsa = this.Q[qStateVerticalBlockIndex][qStateHorizontalBlockIndex][this.actionSelected];
 				this.Q[qStateVerticalBlockIndex][qStateHorizontalBlockIndex][this.actionSelected] = 
-					Q_s_a + this.stepSize * (reward + V_s_dash_a_dash - Q_s_a);
+					Qsa + this.stepSize * (reward + VSDashADash - Qsa);
 					
 				// Assign s' to s
 				this.qState = clone(this.qStateDash);
@@ -262,12 +271,12 @@
 					var qStateVerticalBlockIndex = Math.max(Math.min(this.maxVerticalBlocks, Math.floor((this.qState.verticalDist - this.verticalRange[0])/this.resolution)), 0);
 					var qStateHorizontalBlockIndex = Math.max(Math.min(this.maxHorizontalBlocks, Math.floor((this.qState.horizontalDist - this.horizontalRange[0])/this.resolution)),	0);
 
-					var jump_v = this.Q[qStateVerticalBlockIndex][qStateHorizontalBlockIndex]["jump"];
-					var none_v = this.Q[qStateVerticalBlockIndex][qStateHorizontalBlockIndex]["none"]
-					this.actionSelected = jump_v > none_v ? "jump" : "none";
+					var jumpVal = this.Q[qStateVerticalBlockIndex][qStateHorizontalBlockIndex]["jump"];
+					var noneVal = this.Q[qStateVerticalBlockIndex][qStateHorizontalBlockIndex]["none"]
+					this.actionSelected = jumpVal > noneVal ? "jump" : "none";
 				}
 
-				console.log("action performed: " + this.actionSelected);
+				// console.log("action performed: " + this.actionSelected);
 
 				if (this.actionSelected == "jump") {
 					this.waftyMan.tap();
@@ -286,17 +295,17 @@
 
 		printState: function () {
 
-			var debug_string = "";
+			var debugString = "";
 			// Vertical Distance
 			for (var v = 0; v < (this.verticalRange[1] - this.verticalRange[0])/this.resolution; v++) {				
 				// Horizontal Distance
 				for (var h = 0; h < (this.horizontalRange[1] - this.horizontalRange[0])/this.resolution; h++) {
 				
-					var debug_char = this.Q[v][h]["jump"] > this.Q[v][h]["none"] ? 'j' : '-';
-					debug_string = debug_string + debug_char;
+					var debugChar = this.Q[v][h]["jump"] > this.Q[v][h]["none"] ? 'j' : '-';
+					debugString = debugString + debugChar;
 				}
 			}
-			console.log(debug_string);
+			console.log(debugString);
 		},
 		
         tick_RUNNING: function () {
