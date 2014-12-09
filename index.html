@@ -28,6 +28,10 @@
     <script src="src/entities/Pipe.js"></script>
     <script src="src/screens/MainScreen.js"></script>
     <script src="src/screens/TitleScreen.js"></script>
+
+    <!-- QLearning -->
+    <script src="src/screens/QLearningData.js"></script>
+    <script src="http://danml.com/js/download.js"></script>
     <script>
         /*
             This is the test index.html file. Any changes here should
@@ -44,6 +48,7 @@
             or something, but we were runnin' like the wind to get this
             game out.
         */
+        QLearningInit();
         var w = 320,
             h = 568,
             c = document.getElementById("canvas");

@@ -27,7 +27,7 @@
 		explore: 0.00,
 		actionSelected: "none",
 		resolution: 4,
-		stepSize: 0.7,
+		stepSize: 0.6,
 		verticalRange: [-350, 230],
 		horizontalRange: [0, 180],
 		maxVerticalBlocks: 0,
@@ -58,16 +58,20 @@
 			console.log("Initializing");
             this.reset();
 						
-			// Vertical Distance
-			this.Q = new Array();
-			for (var v = 0; v < (this.verticalRange[1] - this.verticalRange[0])/this.resolution; v++) {
-				this.Q[v] = new Array();
-				// Horizontal Distance
-				for (var h = 0; h < (this.horizontalRange[1] - this.horizontalRange[0])/this.resolution; h++) {
-					this.Q[v][h] = {"jump": 0, "none": 0};
-				}
-			}
-			//console.log(this.Q);
+            if (doPerformQLearning) {
+                // Vertical Distance
+                this.Q = new Array();
+                for (var v = 0; v < (this.verticalRange[1] - this.verticalRange[0])/this.resolution; v++) {
+                    this.Q[v] = new Array();
+                    // Horizontal Distance
+                    for (var h = 0; h < (this.horizontalRange[1] - this.horizontalRange[0])/this.resolution; h++) {
+                        this.Q[v][h] = {"jump": 0, "none": 0};
+                    }
+                }
+            } else {
+                this.Q = storedQ;
+            }
+			// console.log(JSON.stringify(this.Q));
 			
 			this.maxVerticalBlocks = Math.floor((this.verticalRange[1]-this.verticalRange[0]-1)/this.resolution);
 			this.maxHorizontalBlocks = Math.floor((this.horizontalRange[1]-this.horizontalRange[0]-1)/this.resolution);
@@ -150,30 +154,27 @@
             this.state.tick();
             this.waftyMan.tick();
 			
-			var doPerformQLearning = false;
 			var reward = 0;
-			
+            
             switch (this.state.get()) {
                 case "BORN":
                     this.state.set("RUNNING");
                     this.waftyMan.state.set("RUNNING");
 					this.moveLand();
                     break;
-/*                 case "GETREADY":
+                case "GETREADY":
                     if (this.state.count > 30 && Ω.input.pressed("jump")) {
                         this.waftyMan.state.set("RUNNING");
                         this.state.set("RUNNING");
                     }
-                    this.moveLand();
-                    break; */
+                    //this.moveLand();
+                    break;
                 case "RUNNING":
                     this.tick_RUNNING();
-					doPerformQLearning = true;
 					reward = 1;
                     break;
                 case "DYING":
                     this.state.set("GAMEOVER");
-					doPerformQLearning = true;
 					reward = -1000;
                     break;
                 case "GAMEOVER":
@@ -196,9 +197,24 @@
 						console.log("\tBest score:"+this.bestScore);
 						console.log("\tAverage:"+(this.sumScore / this.rebirthCount));
 					}
-					
-					this.reset();
-					this.state.set("BORN");
+                    
+                    if (this.rebirthCount > maxGames) {
+                        this.state.set("GETREADY");
+
+                        if (downloadQString == true) {
+                            // http://stackoverflow.com/questions/21893463/javascript-to-download-string
+                            download(this.QString, "QString.txt", "text/plain");
+                        } else {
+                            console.log(this.Q);
+                            console.log(this.QString);
+                        }
+
+                        // Indicate everything has finished
+                        console.log("Where the sidewalk ends.");
+                    } else {
+                        this.reset();
+                        this.state.set("BORN");
+                    }
 					
                     break;
             }
@@ -252,7 +268,7 @@
 				
 				// update Q(s,a)
 				var jumpVal = this.Q[qStateDashVerticalBlockIndex][qStateDashHorizontalBlockIndex]["jump"];
-				var noneVal = this.Q[qStateDashVerticalBlockIndex][qStateDashHorizontalBlockIndex]["none"]
+				var noneVal = this.Q[qStateDashVerticalBlockIndex][qStateDashHorizontalBlockIndex]["none"];
 				var VSDashADash = Math.max(jumpVal, noneVal);
 
 				var Qsa = this.Q[qStateVerticalBlockIndex][qStateHorizontalBlockIndex][this.actionSelected];
@@ -272,7 +288,7 @@
 					var qStateHorizontalBlockIndex = Math.max(Math.min(this.maxHorizontalBlocks, Math.floor((this.qState.horizontalDist - this.horizontalRange[0])/this.resolution)),	0);
 
 					var jumpVal = this.Q[qStateVerticalBlockIndex][qStateHorizontalBlockIndex]["jump"];
-					var noneVal = this.Q[qStateVerticalBlockIndex][qStateHorizontalBlockIndex]["none"]
+					var noneVal = this.Q[qStateVerticalBlockIndex][qStateHorizontalBlockIndex]["none"];
 					this.actionSelected = jumpVal > noneVal ? "jump" : "none";
 				}
 
@@ -282,7 +298,44 @@
 					this.waftyMan.tap();
 				}
 						
-			}
+			} else {
+                // if (doPerformQLearning == false) ...
+
+				// find current state s
+				var horizontalDist = 9999;
+				var verticalDist = 9999;
+
+				for (var i = 0; i < 6; i++) {
+					if (this.pipes[i].dir == "up" && this.pipes[i].x + this.pipes[i].w >= this.waftyMan.x) {
+						var diff = (this.pipes[i].x + this.pipes[i].w - this.waftyMan.x);
+						if (horizontalDist > diff) {
+							horizontalDist = diff;
+							verticalDist = (this.waftyMan.y - this.pipes[i].y);
+						}
+					}
+				}
+
+                this.qState.verticalDist = verticalDist;
+				this.qState.horizontalDist = horizontalDist;
+                
+                // Discretize into block and Q array's indices
+                var qStateVerticalBlockIndex = Math.max(Math.min(this.maxVerticalBlocks, Math.floor((this.qState.verticalDist - this.verticalRange[0])/this.resolution)), 0);
+                var qStateHorizontalBlockIndex = Math.max(Math.min(this.maxHorizontalBlocks, Math.floor((this.qState.horizontalDist - this.horizontalRange[0])/this.resolution)),	0);
+                
+                // Decide jump or not
+                var jumpVal = this.Q[qStateVerticalBlockIndex][qStateHorizontalBlockIndex]["jump"];
+                var noneVal = this.Q[qStateVerticalBlockIndex][qStateHorizontalBlockIndex]["none"];
+                this.actionSelected = jumpVal > noneVal ? "jump" : "none";
+                
+                // console.log("qStateVerticalBlockIndex: " + qStateVerticalBlockIndex);
+                // console.log("qStateHorizontalBlockIndex: " + qStateHorizontalBlockIndex);
+                // console.log("action performed: " + this.actionSelected);
+                
+				if (this.actionSelected == "jump") {
+					this.waftyMan.tap();
+				}
+                
+            }
 			
 			if (this.shake && !this.shake.tick()) {
 				this.shake = null;
@@ -307,7 +360,7 @@
 			}
 			console.log(debugString);
 		},
-		
+        
         tick_RUNNING: function () {
 
             this.moveLand();
@@ -317,7 +370,9 @@
                 if (!p.counted && p.x < this.waftyMan.x) {
                     p.counted = true;
                     this.score += 0.5;
-                    this.sounds.point.play();
+                    if (muteAudio == false) {
+                        this.sounds.point.play();
+                    }
                 }
 
                 if (p.reset) {

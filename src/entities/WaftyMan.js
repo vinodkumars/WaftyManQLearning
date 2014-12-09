@@ -145,7 +145,9 @@
         tap: function () {
             this.lastTap = Ω.utils.now();
             this.applyImpulse();
-            this.sounds.flap.play();
+            if (muteAudio == false) {
+                this.sounds.flap.play();
+            }
             this.flappingSpeed = this.fastFlap;
         },
 
@@ -168,7 +170,9 @@
 
         die: function (byGround) {
             if (this.screen.state.is("RUNNING")) {
-                this.sounds.hit.play();
+                if (muteAudio == false) {
+                    this.sounds.hit.play();
+                }
                 //if (!byGround) this.sounds.coconuts.play();
                 this.screen.state.set("DYING");
                 this.state.set("DYING");
