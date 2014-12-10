@@ -1,6 +1,7 @@
 
 // Declare global variables
-var doPerformQLearning = false;    // true = train Q weights. false = run games using Q weights
+var doPerformQLearning = true;    // true (always)
+var startQLearningFuture = true;  // false = initialize Q with zeros. true = initialize Q with storedQ. 
 var heartbeatMultiplier = 10000;  // makes the game run faster (or slower)
 var maxGames = 3000;              // max number of games to play
 var downloadQString = true;       // when the QString.txt file is downloaded, the web console clears! =*(
@@ -33,7 +34,7 @@ var storedQ5000 =
 ;
 
 
-// Select desired Q value to use when doPerformQLearning = false =
+// Select desired Q value to use when startQLearningFuture = true
 var storedQ = storedQ5000;  // storedQ900, storedQ3000, etc.
 
 function QLearningInit() {
@@ -42,12 +43,10 @@ function QLearningInit() {
     if (heartbeatMultiplier >= 1000) {
         muteAudio = true;
     }
-    if (doPerformQLearning == false) {
-        downloadQString = false;
-    }
 
     // Display Q learning parameters
     console.log("doPerformQLearning: " + doPerformQLearning);
+    console.log("startQLearningFuture: " + startQLearningFuture);
     console.log("heartbeatMultiplier: " + heartbeatMultiplier);
     console.log("maxGames: " + maxGames);
     console.log("downloadQString: " + downloadQString);

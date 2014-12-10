@@ -58,7 +58,7 @@
 			console.log("Initializing");
             this.reset();
 						
-            if (doPerformQLearning) {
+            if (startQLearningFuture == false) {
                 // Vertical Distance
                 this.Q = new Array();
                 for (var v = 0; v < (this.verticalRange[1] - this.verticalRange[0])/this.resolution; v++) {
@@ -298,44 +298,7 @@
 					this.waftyMan.tap();
 				}
 						
-			} else {
-                // if (doPerformQLearning == false) ...
-
-				// find current state s
-				var horizontalDist = 9999;
-				var verticalDist = 9999;
-
-				for (var i = 0; i < 6; i++) {
-					if (this.pipes[i].dir == "up" && this.pipes[i].x + this.pipes[i].w >= this.waftyMan.x) {
-						var diff = (this.pipes[i].x + this.pipes[i].w - this.waftyMan.x);
-						if (horizontalDist > diff) {
-							horizontalDist = diff;
-							verticalDist = (this.waftyMan.y - this.pipes[i].y);
-						}
-					}
-				}
-
-                this.qState.verticalDist = verticalDist;
-				this.qState.horizontalDist = horizontalDist;
-                
-                // Discretize into block and Q array's indices
-                var qStateVerticalBlockIndex = Math.max(Math.min(this.maxVerticalBlocks, Math.floor((this.qState.verticalDist - this.verticalRange[0])/this.resolution)), 0);
-                var qStateHorizontalBlockIndex = Math.max(Math.min(this.maxHorizontalBlocks, Math.floor((this.qState.horizontalDist - this.horizontalRange[0])/this.resolution)),	0);
-                
-                // Decide jump or not
-                var jumpVal = this.Q[qStateVerticalBlockIndex][qStateHorizontalBlockIndex]["jump"];
-                var noneVal = this.Q[qStateVerticalBlockIndex][qStateHorizontalBlockIndex]["none"];
-                this.actionSelected = jumpVal > noneVal ? "jump" : "none";
-                
-                // console.log("qStateVerticalBlockIndex: " + qStateVerticalBlockIndex);
-                // console.log("qStateHorizontalBlockIndex: " + qStateHorizontalBlockIndex);
-                // console.log("action performed: " + this.actionSelected);
-                
-				if (this.actionSelected == "jump") {
-					this.waftyMan.tap();
-				}
-                
-            }
+			}
 			
 			if (this.shake && !this.shake.tick()) {
 				this.shake = null;
