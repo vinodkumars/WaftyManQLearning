@@ -3,7 +3,7 @@
 var doPerformQLearning = true;    // true (always)
 var startQLearningFuture = true;  // false = initialize Q with zeros. true = initialize Q with storedQ. 
 var heartbeatMultiplier = 10000;  // makes the game run faster (or slower)
-var maxGames = 3000;              // max number of games to play
+var maxGames = 5000;              // max number of games to play
 var downloadQString = true;       // when the QString.txt file is downloaded, the web console clears! =*(
 var muteAudio = true;             // game has problem parsing mp3 files when heartbeatMultiplier >= 1000
 
@@ -52,4 +52,18 @@ function QLearningInit() {
     console.log("downloadQString: " + downloadQString);
     console.log("muteAudio: " + muteAudio);
 
+    // update game log
+    updateGameLog("doPerformQLearning: " + doPerformQLearning);
+    updateGameLog("startQLearningFuture: " + startQLearningFuture);
+    updateGameLog("heartbeatMultiplier: " + heartbeatMultiplier);
+    updateGameLog("maxGames: " + maxGames);
+    updateGameLog("downloadQString: " + downloadQString);
+    updateGameLog("muteAudio: " + muteAudio);
+    
+}
+
+// Used to store very long console log
+var gameLog = "";
+function updateGameLog (logText) {
+    gameLog = gameLog + logText + '\n';
 }

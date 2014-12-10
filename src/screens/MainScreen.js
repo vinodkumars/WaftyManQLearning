@@ -58,6 +58,7 @@
  
         init: function () {
 			console.log("Initializing");
+            updateGameLog("Initializing");
             this.reset();
 						
             if (startQLearningFuture == false) {
@@ -196,12 +197,19 @@
 					this.QString=JSON.stringify(this.Q);
 					this.rebirthCount++;
 					if(this.rebirthCount % 100===0) {
+                        // Display status to console
 						console.log("Rebirth count:"+this.rebirthCount);
-						// console.log(this.QString);
 						console.log("\tBest score:"+this.bestScore);
 						console.log("\tAverage:"+(this.sumScore / this.rebirthCount));
                         console.log("\tMoving average:" + (this.sumScoreMA / 100));
                         console.log("\tMoving std dev:" + Math.sqrt(this.sumScoreSqMA + (this.sumScoreMA * this.sumScoreMA) / 100)/(100-1));
+
+                        // Write status to gameLog
+                        updateGameLog("Rebirth count:"+this.rebirthCount);
+						updateGameLog("\tBest score:"+this.bestScore);
+						updateGameLog("\tAverage:"+(this.sumScore / this.rebirthCount));
+                        updateGameLog("\tMoving average:" + (this.sumScoreMA / 100));
+                        updateGameLog("\tMoving std dev:" + Math.sqrt(this.sumScoreSqMA + (this.sumScoreMA * this.sumScoreMA) / 100)/(100-1));
                         
                         // reset moving average and std dev
                         this.sumScoreMA = 0;
@@ -213,7 +221,7 @@
 
                         if (downloadQString == true) {
                             // http://stackoverflow.com/questions/21893463/javascript-to-download-string
-                            download(this.QString, "QString.txt", "text/plain");
+                            download(gameLog + this.QString, "QString.txt", "text/plain");
                         } else {
                             console.log(this.Q);
                             console.log(this.QString);
