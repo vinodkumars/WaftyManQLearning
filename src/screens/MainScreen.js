@@ -40,6 +40,8 @@
 		rebirthCount: 0,
 		bestScore: 0,
 		sumScore: 0,
+        sumScoreMA: 0,
+        sumScoreSqMA: 0,
 		
         pipeDist: 174,
         pipeGap: 114 / 2,
@@ -184,6 +186,8 @@
                     }
 					
 					this.sumScore = this.sumScore + this.score;
+                    this.sumScoreMA = this.sumScoreMA + this.score;
+                    this.sumScoreSqMA = this.sumScoreSqMA + this.score * this.score;
 					if (this.score > this.bestScore) {
 						// console.log("Best Score: "+this.score);
 						this.bestScore = this.score;
@@ -196,6 +200,12 @@
 						// console.log(this.QString);
 						console.log("\tBest score:"+this.bestScore);
 						console.log("\tAverage:"+(this.sumScore / this.rebirthCount));
+                        console.log("\tMoving average:" + (this.sumScoreMA / 100));
+                        console.log("\tMoving std dev:" + Math.sqrt(this.sumScoreSqMA + (this.sumScoreMA * this.sumScoreMA) / 100)/(100-1));
+                        
+                        // reset moving average and std dev
+                        this.sumScoreMA = 0;
+                        this.sumScoreSqMA = 0;
 					}
                     
                     if (this.rebirthCount > maxGames) {
