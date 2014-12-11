@@ -281,8 +281,8 @@
 				var qStateDashVerticalBlockIndex = Math.max(Math.min(this.maxVerticalBlocks, Math.floor((this.qStateDash.verticalDist - this.verticalRange[0])/this.resolution)), 0);		
 				var qStateDashHorizontalBlockIndex = Math.max(Math.min(this.maxHorizontalBlocks, Math.floor((this.qStateDash.horizontalDist - this.horizontalRange[0])/this.resolution )), 0);
 				
-				/* console.log("s: Vertical: " + qStateVerticalBlockIndex + ", Horizontal: " + qStateHorizontalBlockIndex);
-				console.log("s' Vertical: " + qStateDashVerticalBlockIndex + ", Horizontal: " + qStateDashHorizontalBlockIndex); */
+				//console.log("s: Vertical: " + qStateVerticalBlockIndex + ", Horizontal: " + qStateHorizontalBlockIndex);
+				//console.log("s' Vertical: " + qStateDashVerticalBlockIndex + ", Horizontal: " + qStateDashHorizontalBlockIndex);
 				
 				// update Q(s,a)
 				var jumpVal = this.Q[qStateDashVerticalBlockIndex][qStateDashHorizontalBlockIndex]["jump"];
